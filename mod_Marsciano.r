@@ -9,6 +9,8 @@ str(ram_data)
 library(dplyr)
 library(lifecycle)
 library(zoo)
+library(ggplot2)
+library(scales)
 #library(magrittr)
 #library(tidyverse)
 
@@ -115,6 +117,50 @@ ram_data <- ram_data %>%
                     1 / (1 + 15075.146 * exp(-0.226 * BBCHest)),
                     NA_real_)  # NA al di fuori dell'intervallo delle date
   )
+
+
+
+#### Graphs ####
+
+
+# Graph 1: rolling_avg
+ggplot(ram_data, aes(x = as.Date(date), y = rolling_avg)) +
+  geom_col(na.rm = TRUE, fill = "steelblue") +  
+  scale_y_continuous(limits = c(0, 6)) +        # Limits of y axis
+  scale_x_date(date_breaks = "1 month", date_labels = "%d-%m-%y") +    # Prime date del mese
+  labs(x = "Date",
+       y = "Rolling Average (7dd)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Ruota le date
+
+
+# Graph 2: INFrate e INFcum
+ggplot(ram_data, aes(x = as.Date(date))) +
+  geom_col(aes(y = INFrate), fill = "darkblue", na.rm = TRUE) +
+  scale_y_continuous(name = "INFrate", limits = c(0, 1), 
+                     sec.axis = sec_axis(~ . * 16, name = "INFcum")) +   # Asse secondario
+  # Linea per INFcum sull'asse secondario
+  geom_line(aes(y = INFcum / 16), color = "orange", size = 1, na.rm = TRUE) +  # Scala adattata per INFcum
+  #geom_hline(yintercept = 0.9, color = "red", size = 1) +  # Linea orizzontale a 0.9 (asse primario)
+  # annotate("text", x = as.Date("2024-03-01"), y = 0.92, label = "", color = "red") +  # Filtra la linea orizzontale solo nell'intervallo delle date
+  scale_x_date(date_breaks = "1 month", date_labels = "%d-%m-%y") +
+  labs(x = "Date",
+       y = "INFrate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# Graph 3: Ponset
+ggplot(ram_data, aes(x = as.Date(date), y = Ponset)) +
+  geom_line(color = "darkgreen", size = 1, na.rm = TRUE) +  
+  scale_y_continuous(limits = c(0, 1)) +                 
+  
+  labs(x = "Date",
+       y = "Ponset") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Ruota le date
+
+
 
 
 
